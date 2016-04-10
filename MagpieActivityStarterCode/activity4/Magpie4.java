@@ -54,17 +54,24 @@ public class Magpie4
 			response = transformIWantToStatement(statement);
 		}
 
+		else if (findKeyword(statement, "I want", 0) >= 0) {
+		    response = transformIWantSomethingStatement(statement);
+		}
 		else
 		{
 			// Look for a two word (you <something> me)
 			// pattern
 			int psn = findKeyword(statement, "you", 0);
+			int pos = findKeyword(statement, "I", 0);
 
-			if (psn >= 0
-					&& findKeyword(statement, "me", psn) >= 0)
-			{
-				response = transformYouMeStatement(statement);
+			if (psn >= 0 && findKeyword(statement, "me", psn) >= 0){
+			    response = transformYouMeStatement(statement);
 			}
+
+			else if(pos >= 0 && findKeyword(statement, "you", pos) >= 0) {
+			    response = transformMeYouStatement(statement);
+			}
+			
 			else
 			{
 				response = getRandomResponse();
@@ -95,7 +102,18 @@ public class Magpie4
 		return "What would it mean to " + restOfStatement + "?";
 	}
 
-	
+	private String transformIWantSomethingStatement(String statement)
+	{
+	    // Remove the final period, if there is one
+	    statement = statement.trim();
+	    String lastChar = statement.substring(statement.length() - 1);
+	    if (lastChar.equals(".")) {
+		statement = statement.substring(0, statement.length() - 1);
+	    }
+	    int psn = findKeyword(statement, "I want", 0);
+	    String restOfStatement = statement.substring(psn + 7).trim();
+	    return "Would you really be happy if you had "+restOfStatement+"?";
+	}
 	
 	/**
 	 * Take a statement with "you <something> me" and transform it into 
@@ -122,8 +140,21 @@ public class Magpie4
 		return "What makes you think that I " + restOfStatement + " you?";
 	}
 	
-	
+    private String transformMeYouStatement(String statement)
+    {
+	// Remove the final period, if there is one
+	statement = statement.trim();
+	String lastChar = statement.substring(statement.length() - 1);
+	if (lastChar.equals(".")) {
+	    statement = statement.substring(0, statement.length() - 1);
+	}
 
+	int psnOfMe = findKeyword(statement, "me", 0);
+	int psnOfYou = findKeyword(statement, "you", psnOfMe + 2);
+	
+	String restOfStatement = statement.substring(psnOfMe+2,psnOfYou).trim();
+	return "Why do you " + restOfStatement + " me?";
+    }
 	
 	
 	/**
